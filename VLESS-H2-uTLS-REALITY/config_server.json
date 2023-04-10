@@ -1,0 +1,135 @@
+{
+  "log": {
+    "loglevel": "info",
+    "access": "/var/log/xray/access.log",
+    "error": "/var/log/xray/error.log"
+  },
+  "api": {
+    "tag": "api",
+    "services": [
+      "HandlerService",
+      "LoggerService",
+      "StatsService"
+    ]
+  },
+  "stats": {},
+  "policy": {
+    "levels": {
+      "0": {
+        "statsUserUplink": true,
+        "statsUserDownlink": true
+      }
+    },
+    "system": {
+      "statsInboundUplink": true,
+      "statsInboundDownlink": true,
+      "statsOutboundUplink": true,
+      "statsOutboundDownlink": true
+    }
+  },
+  "dns": {
+    "servers": [
+      "https+local://cloudflare-dns.com/dns-query",
+      "1.1.1.1",
+      "1.0.0.1",
+      "8.8.8.8",
+      "8.8.4.4",
+      "localhost"
+    ]
+  },
+  "inbounds": [
+    {
+      "listen": "0.0.0.0",
+      "port": 443,
+      "protocol": "vless",
+      "settings": {
+        "clients": [
+          {
+            "id": "你的UUID",
+            "flow": ""
+          }
+        ],
+        "decryption": "none"
+      },
+      "streamSettings": {
+        "network": "h2",
+        "security": "reality",
+        "realitySettings": {
+          "show": true,
+          "dest": "hk.trip.com:443(只是例子，自行寻找合适服务器的网站)",
+          "xver": 0,
+          "maxTimeDiff": 0,
+          "minClientVer": "",
+          "serverNames": [
+            "trip.com(只是例子，自行寻找合适服务器的网站)",
+            "hk.trip.com(只是例子，自行寻找合适服务器的网站)"
+          ],
+          "privateKey": "你的私钥",
+          "shortIds": [
+            "e1",
+            "1e59",
+            "58d42a",
+            "3a6c8ee5",
+            "3df9f40ad4",
+            "37fd95b35db9",
+            "c3105c6124517f",
+            "583bf98b1bb842c3"
+          ]
+        }
+      },
+      "sniffing": {
+        "enabled": true,
+        "destOverride": [
+          "http",
+          "tls"
+        ]
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "freedom",
+      "tag": "direct"
+    },
+    {
+      "protocol": "blackhole",
+      "tag": "blocked"
+    }
+  ],
+  "routing": {
+    "domainStrategy": "IPIfNonMatch",
+    "rules": [
+      {
+        "inboundTag": [
+          "api"
+        ],
+        "outboundTag": "api",
+        "type": "field"
+      },
+      {
+        "domain": [
+          "domain:iqiyi.com",
+          "domain:video.qq.com",
+          "domain:youku.com"
+        ],
+        "type": "field",
+        "outboundTag": "blocked"
+      },
+      {
+        "type": "field",
+        "ip": [
+          "geoip:cn",
+          "geoip:private"
+        ],
+        "outboundTag": "blocked"
+      },
+      {
+        "protocol": [
+          "bittorrent"
+        ],
+        "type": "field",
+        "outboundTag": "blocked"
+      }
+    ]
+  }
+}
